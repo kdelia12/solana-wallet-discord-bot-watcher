@@ -5,6 +5,9 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 const token = process.env.TOKEN;
 const address = process.env.ADDRESS;
 
+const switchDelay = 15000; // 15 seconds
+const retryDelay = 30000; // 30 seconds
+
 async function fetchSolBalance() {
   const requestData = {
     jsonrpc: '2.0',
@@ -21,9 +24,10 @@ async function fetchSolBalance() {
       activities: [{ name: `${solBalance} SOL`, type: 'WATCHING' }],
       status: 'dnd'
     });
-    setTimeout(fetchUsdtBalance, 15000); // Switch to USDT after 15 seconds
+    setTimeout(fetchUsdcBalance, switchDelay); // Switch to USDC after 15 seconds
   } catch (error) {
     console.error(error);
+    setTimeout(fetchSolBalance, retryDelay); // Retry after 30 seconds
   }
 }
 
@@ -53,16 +57,17 @@ async function fetchUsdcBalance() {
       activities: [{ name: `${usdcBalance} USDC`, type: 'WATCHING' }],
       status: 'dnd'
     });
-    setTimeout(fetchSolBalance, 15000); // Switch to SOL after 15 seconds
+    setTimeout(fetchUsdtBalance, switchDelay); // Switch to USDT after 15 seconds
   } catch (error) {
     console.error(error);
+    setTimeout(fetchUsdcBalance, retryDelay); // Retry after 30 seconds
   }
 }
 
 async function fetchUsdtBalance() {
   const requestData = {
     jsonrpc: '2.0',
-    id: 2,
+    id: 3,
     method: 'getTokenAccountsByOwner',
     params: [
       address,
@@ -85,9 +90,10 @@ async function fetchUsdtBalance() {
       activities: [{ name: `${usdtBalance} USDT`, type: 'WATCHING' }],
       status: 'dnd'
     });
-    setTimeout(fetchUsdcBalance, 15000); // Switch to USDC after 15 seconds
+    setTimeout(fetchSolBalance, switchDelay); // Switch to SOL after 15 seconds
   } catch (error) {
     console.error(error);
+    setTimeout(fetchUsdtBalance, retryDelay); // Retry after 30 seconds
   }
 }
 
